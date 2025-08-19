@@ -24,3 +24,24 @@ html, body {
     margin-top: 20px;
     cursor: pointer;
 }
+
+.loseScreen {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: tomato;
+    color: white;
+    font-size: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loseScreen button {
+    font-size: 24px;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+}

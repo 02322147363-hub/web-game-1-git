@@ -4,7 +4,8 @@ const c = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
 
-const gravity = 0.3
+const gravity = 1200
+const jumpForce = -600
 
 c.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -12,6 +13,11 @@ const uiWin = document.getElementById("winScreen")
 uiWin.style.width = canvas.width + "px"
 uiWin.style.height = canvas.height + "px"
 uiWin.style.display = "none"
+
+const uiLose = document.getElementById("loseScreen")
+uiLose.style.width = canvas.width + "px"
+uiLose.style.height = canvas.height + "px"
+uiLose.style.display = "none"
 
 class Sprite {
     constructor({width, height, position, velocity, color}) {
@@ -32,18 +38,12 @@ class Sprite {
 
     }
 
-    update() {
+    update(deltaTime = 1) {
         this.draw()
 
-        this.position.x += this.velocity.x
-        this.position.y += this.velocity.y
-        this.velocity.y += gravity
-
-        if(this.position.y + this.height >= canvas.height) {
-            this.position.y = canvas.height - this.height
-            this.velocity.y = 0
-            this.isOnGround = true
-        }
+        this.position.x += this.velocity.x * deltaTime
+        this.position.y += this.velocity.y * deltaTime
+        this.velocity.y += gravity * deltaTime
 
         if (this.position.x < 0) {
             this.position.x = 0
@@ -58,9 +58,9 @@ class Sprite {
 }
 
 class Player extends Sprite {
-    handleInput(keys) {
-        const accel = 0.22
-        const maxSpeed = 4
+    handleInput(keys, deltaTime) {
+        const accel = 600
+        const maxSpeed = 300
         const deccel = 0.93
 
         // Player movement
@@ -73,9 +73,9 @@ class Player extends Sprite {
         } else if (keys.arrowRight.pressed && keys.a.pressed) {
             this.velocity.x *= deccel
         } else if (keys.a.pressed || keys.arrowLeft.pressed) {
-            this.velocity.x -= accel
+            this.velocity.x -= accel * deltaTime
         } else if (keys.d.pressed || keys.arrowRight.pressed) {
-            this.velocity.x += accel
+            this.velocity.x += accel * deltaTime
         } else {
             this.velocity.x *= deccel
         }
@@ -86,18 +86,44 @@ class Player extends Sprite {
 }
 
 class She extends Sprite {
-    follow(player) {
-        const speed = 1.7
-        const range = 210
+    follow(player, deltaTime) {
+        const accel = 900
+        const maxSpeed = 120
+        const deccel = 0.95
+        const range = 200
         
         const dx = player.position.x - this.position.x
         const distanceX = Math.abs(dx)
 
         if (distanceX > range) {
-            this.velocity.x = 0
+            this.velocity.x *= deccel
         } else {
-            this.velocity.x = dx > 0 ? speed : -speed
+            this.velocity.x += dx > 0 ? accel * deltaTime : -accel * deltaTime
         }
+
+        if (this.velocity.x > maxSpeed) this.velocity.x = maxSpeed
+        if (this.velocity.x < -maxSpeed) this.velocity.x = -maxSpeed
+    }
+}
+
+class Enemy extends Sprite {
+    follow(player, deltaTime) {
+        const accel = 500
+        const maxSpeed = 112
+        const deccel = 0.95
+        const range = 200
+        
+        const dx = player.position.x - this.position.x
+        const distanceX = Math.abs(dx)
+
+        if (distanceX > range) {
+            this.velocity.x *= deccel
+        } else {
+            this.velocity.x += dx > 0 ? accel * deltaTime : -accel * deltaTime
+        }
+
+        if (this.velocity.x > maxSpeed) this.velocity.x = maxSpeed
+        if (this.velocity.x < -maxSpeed) this.velocity.x = -maxSpeed
     }
 }
 
@@ -129,7 +155,7 @@ class Cage {
     }
 }
 
-let player, she, cage, platforms = []
+let player, she, cage, platforms = [], enemies = []
 
 const charWidth = 20
 const charHeight = 50
@@ -155,7 +181,8 @@ const levels = [
             {
                 x: 0, y: canvas.height - groundHeight, width: canvas.width, height: groundHeight
             }
-        ]
+        ],
+        enemies: []
         // level 0 end -------------------------
     }, {
         // level 1 start -----------------------
@@ -165,7 +192,7 @@ const levels = [
         },
         she: {
             x: 860,
-            y: 375 - charHeight
+            y: canvas.height - charHeight - groundHeight
         },
         cage: {
             x: 120,
@@ -177,6 +204,12 @@ const levels = [
             }, {
                 x: canvas.width - 600, y: 375, width: 600, height: 20
             }
+        ],
+        enemies: [
+            {
+                x: 860,
+                platformIndex: 1
+            }
         ]
         // level 1 end -----------------------
     }
@@ -184,6 +217,7 @@ const levels = [
 
 function loadLevel(index) {
     const data = levels[index]
+    // console.log("loading level", index, data)
 
     player = new Player({
         width: charWidth,
@@ -228,6 +262,46 @@ function loadLevel(index) {
         width: p.width,
         height: p.height
     }))
+
+    function findPlatformUnderX(x) {
+        return platforms.find(p => (x >= p.position.x) && (x <= p.position.x + p.width))
+    }
+
+    enemies = (data.enemies || []).map(e => {
+
+        let spawnY = null
+
+        if (typeof e.y === 'number') {
+            spawnY = e.y
+        } else if (typeof e.platformIndex === 'number') {
+            const pi = e.platformIndex
+            if (platforms[pi]) {
+                spawnY = platforms[pi].position.y - charHeight
+            }
+        } else {
+            const pUnder = platforms.find(
+                p => e.x >= p.position.x && e.x <= p.position.x + p.width
+            )
+            if (pUnder) spawnY = pUnder.position.y - charHeight
+            else spawnY = canvas.height - groundHeight - charHeight
+        }
+
+        const enemy = new Enemy({
+            width: charWidth,
+            height: charHeight,
+            position: {
+                x: e.x,
+                y: spawnY
+            },
+            velocity: {
+                x: 0,
+                y: 0
+            },
+            color: "red"
+        })
+
+        return enemy
+    })
 }
 
 const keys = {
@@ -248,75 +322,108 @@ const keys = {
     }
 }
 
-function checkCollision(player, platform) {
+function checkCollision(obj, platform, deltaTime) {
+
+    const nextX = obj.position.x + obj.velocity.x * deltaTime
+    const nextY = obj.position.y + obj.velocity.y * deltaTime
 
     if (
-        player.position.y + player.height <= platform.position.y &&
-        player.position.y + player.height + player.velocity.y >= platform.position.y &&
-        player.position.x + player.width >= platform.position.x &&
-        player.position.x <= platform.position.x + platform.width
+        obj.position.y + obj.height <= platform.position.y &&
+        nextY + obj.height >= platform.position.y &&
+        obj.position.x + obj.width >= platform.position.x &&
+        obj.position.x <= platform.position.x + platform.width
     ) {
-        player.velocity.y = 0
-        player.isOnGround = true
-        player.position.y = platform.position.y - player.height
+            obj.velocity.y = 0
+            obj.isOnGround = true
+            obj.position.y = platform.position.y - obj.height
     }
 
     if (
-        player.position.y >= platform.position.y + platform.height &&
-        player.position.y + player.velocity.y <= platform.position.y + platform.height &&
-        player.position.x + player.width >= platform.position.x &&
-        player.position.x <= platform.position.x + platform.width
+        obj.position.y >= platform.position.y + platform.height &&
+        nextY <= platform.position.y + platform.height &&
+        obj.position.x + obj.width >= platform.position.x &&
+        obj.position.x <= platform.position.x + platform.width &&
+        obj.velocity.y < 0
     ) {
-        player.velocity.y = 0
-        player.position.y = platform.position.y + platform.height
+        obj.velocity.y = 0
+        obj.position.y = platform.position.y + platform.height
     }
 
-    const overlapY = player.position.y + player.height > platform.position.y && player.position.y < platform.position.y + platform.height
+    const overlapY = obj.position.y + obj.height > platform.position.y && obj.position.y < platform.position.y + platform.height
 
     if (
         overlapY &&
-        player.position.x + player.width <= platform.position.x &&
-        player.position.x + player.width + player.velocity.x >= platform.position.x
+        obj.position.x + obj.width <= platform.position.x &&
+        nextX + obj.width >= platform.position.x
     ) {
-        player.velocity.x = 0
-        player.position.x = platform.position.x - player.width
+        obj.velocity.x = 0
+        obj.position.x = platform.position.x - obj.width
     }
 
     if (
         overlapY &&
-        player.position.x >= platform.position.x + platform.width &&
-        player.position.x + player.velocity.x <= platform.position.x + platform.width
+        obj.position.x >= platform.position.x + platform.width &&
+        nextX <= platform.position.x + platform.width
     ) {
-        player.velocity.x = 0
-        player.position.x = platform.position.x + platform.width
+        obj.velocity.x = 0
+        obj.position.x = platform.position.x + platform.width
     }
 }
 
-function animate() {
-    window.requestAnimationFrame(animate)
+let lastTime = 0
+let animationId
+lastTime = performance.now()
+
+function animate(time = 0) {
+    let deltaTime = (time - lastTime) / 1000
+    if (deltaTime > 0.1) deltaTime = 0.1
+    lastTime = time
+
+    animationId = window.requestAnimationFrame(animate)
+
     c.fillStyle = 'black'
     c.fillRect(0, 0, canvas.width, canvas.height)
 
-    player.handleInput(keys)
-    she.follow(player)
-
-    player.update()
-    she.update()
-
     player.isOnGround = false
-    she.isOnGround = false
+
+    player.handleInput(keys, deltaTime)
+    she.follow(player, deltaTime)
+
+    player.update(deltaTime)
+    she.update(deltaTime)
+
+    enemies.forEach(enemy => {
+        enemy.follow(player, deltaTime)
+        enemy.update(deltaTime)
+    })
 
     // platform
-    platforms.forEach(p => {
-        p.draw()
-        checkCollision(player, p)
-        checkCollision(she, p)
+    platforms
+        .slice()
+        .sort((a, b) => a.position.y - b.position.y)
+        .forEach(p => {
+            p.draw()
+            checkCollision(player, p, deltaTime)
+            checkCollision(she, p, deltaTime)
+            enemies.forEach(enemy => checkCollision(enemy, p, deltaTime))
+            if (checkCollision(player, p)) {
+                player.isOnGround = true
+            }
     })
 
     // cage
     cage.draw()
 
     checkWinCondition()
+    
+    const lostObject = [...enemies, she]
+
+    lostObject.forEach (obj => {
+        if (isColliding(player, obj))
+        {
+            gameOver()
+        }
+    })
 }
 
 
@@ -337,7 +444,7 @@ window.addEventListener('keydown', (event) => {
             break
         case 'w':
             if (player.isOnGround) {
-                player.velocity.y = -10.5
+                player.velocity.y = jumpForce
                 player.isOnGround = false
             }
             break
@@ -349,7 +456,7 @@ window.addEventListener('keydown', (event) => {
             break
         case 'ArrowUp':
             if (player.isOnGround) {
-                player.velocity.y = -10.5
+                player.velocity.y = jumpForce
                 player.isOnGround = false
             }
     }
@@ -372,6 +479,7 @@ window.addEventListener('keyup', (event) => {
     }
 })
 
+// ----------- Win Condition Start -------------
 function checkWinCondition() {
     const gapCage = 15
 
@@ -386,16 +494,47 @@ function checkWinCondition() {
         isWin = true
         uiWin.style.display = "flex"
         Object.values(keys).forEach(k => k.pressed = false)
+        cancelAnimationFrame(animationId)
     }
 }
 
 document.getElementById("nextLevelButton").addEventListener("click", () => {
     currentLevel++
+    // let isDone = false
+    // if (currentLevel = 1) isDone = true
+
     if (currentLevel < levels.length) {
         loadLevel(currentLevel)
+        isWin = false
+        uiWin.style.display = "none"
+        animate()
     } else {
         console.log('game selesai')
     }
-    isWin = false
-    uiWin.style.display = "none"
 })
+
+// ----------- Win Condition End ------------
+
+// ------------ Lose Condition Start ------------
+function isColliding(a, b) {
+        return (
+            a.position.x < b.position.x + b.width &&
+            a.position.x + a.width > b.position.x &&
+            a.position.y < b.position.y + b.height &&
+            a.position.y + a.height > b.position.y
+        )
+}
+
+function gameOver() {
+    cancelAnimationFrame(animationId)
+    uiLose.style.display = "flex"
+    cancelAnimationFrame(animationId)
+    Object.values(keys).forEach (k => k.pressed = false)
+}
+
+document.getElementById("retryButton").addEventListener("click", () => {
+    loadLevel(currentLevel)
+    uiLose.style.display = "none"
+    animate()
+})
+// ----------- Lose Condition End --------------

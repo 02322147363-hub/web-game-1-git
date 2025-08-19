@@ -1,6 +1,7 @@
 Player = Done
 Ground/Platform = Done
-Zombie (target)
-Zombie (enemy)
-Level
-UI
+Zombie (target) = Done
+Zombie (enemy) = Done
+Level = Done
+UI =
+Win-Lose-Condition =
