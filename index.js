@@ -34,10 +34,6 @@ class Sprite {
         c.fillRect (this.position.x, this.position.y, this.width, this.height)
     }
 
-    applyMovement(keys) {
-
-    }
-
     update(deltaTime = 1) {
         this.draw()
 
@@ -155,7 +151,31 @@ class Cage {
     }
 }
 
-let player, she, cage, platforms = [], enemies = []
+class Bullet {
+    constructor(x, y, direction) {
+        this.width = 10
+        this.height = 5
+        this.speed = 500
+        this.position = {x, y}
+        this.velocity  =  { x: this.speed * direction, y: 0}
+        this.active = true
+    }
+
+    update(deltaTime) {
+        this.position.x += this.velocity.x * deltaTime
+
+        if (this.position.x < 0 || this.position.x > canvas.width) {
+            this.active = false
+        }
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = "yellow"
+        ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+    }
+}
+
+let player, she, cage, platforms = [], enemies = [], bullets []
 
 const charWidth = 20
 const charHeight = 50
