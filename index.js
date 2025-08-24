@@ -78,6 +78,9 @@ class Player extends Sprite {
 
         if (this.velocity.x > maxSpeed) this.velocity.x = maxSpeed
         if (this.velocity.x < -maxSpeed) this.velocity.x = -maxSpeed
+
+        if (keys.arrowRight.pressed || keys.d.pressed) player.facing = 1
+        if (keys.arrowLeft.pressed || keys.a.pressed) player.facing = -1
     }
 }
 
@@ -169,13 +172,13 @@ class Bullet {
         }
     }
 
-    draw(ctx) {
-        ctx.fillStyle = "yellow"
-        ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+    draw() {
+        c.fillStyle = "yellow"
+        c.fillRect(this.position.x, this.position.y, this.width, this.height)
     }
 }
 
-let player, she, cage, platforms = [], enemies = [], bullets []
+let player, she, cage, platforms = [], enemies = [], bullets = []
 
 const charWidth = 20
 const charHeight = 50
@@ -444,6 +447,10 @@ function animate(time = 0) {
             gameOver()
         }
     })
+
+    bullets.forEach((bullet => bullet.update(deltaTime)))
+    bullets = bullets.filter((bullet => bullet.active))
+    bullets.forEach((bullet) => bullet.draw())
 }
 
 
@@ -496,6 +503,16 @@ window.addEventListener('keyup', (event) => {
         case 'ArrowRight':
             keys.arrowRight.pressed = false
             break
+    }
+})
+
+window.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+        const direction = player.facing || 1
+        const bulletX = player.position.x + player.width / 2
+        const bulletY = player.position.y + player.height / 1.5
+
+        bullets.push(new Bullet(bulletX, bulletY, direction))
     }
 })
 
