@@ -14,6 +14,11 @@ uiWin.style.width = canvas.width + "px"
 uiWin.style.height = canvas.height + "px"
 uiWin.style.display = "none"
 
+const uiEnd = document.getElementById("endScreen")
+uiEnd.style.display = "none"
+uiEnd.style.width = canvas.width + "px"
+uiEnd.style.height = canvas.height + "px"
+
 const uiLose = document.getElementById("loseScreen")
 uiLose.style.width = canvas.width + "px"
 uiLose.style.height = canvas.height + "px"
