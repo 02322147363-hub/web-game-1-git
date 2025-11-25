@@ -1,13 +1,10 @@
-let win = false
+let isWin = false
+
+export function setWin(v) { isWin = v }
+export function getWin() { return isWin }
+export function resetWin() { isWin = false }
+
 let inputLock = false
-
-export function setWin(value) {
-    win = value
-}
-
-export function isWin() {
-    return win
-}
 
 export function lockInput() {
     inputLock = true

@@ -1,7 +1,7 @@
 import Bullet from "./entities/Bullet.js"
-import { keys, resetInput } from "./systems/inputKeys.js"
+import { keys } from "./systems/inputKeys.js"
 import "./systems/input.js"
-import { inputLocked, unlockInput, lockInput, setWin } from "./systems/gameState.js"
+import { inputLocked, setWin, resetWin } from "./systems/gameState.js"
 import { checkCollision } from "./systems/collision.js"
 import { levels } from "./levels/levelData.js"
 import { loadLevel } from "./levels/loadLevel.js"
@@ -28,6 +28,26 @@ let bullets = []
 let lastTime = 0
 let animationId
 lastTime = performance.now()
+
+window.addEventListener("selectLevel", (e) => {
+
+    ({
+        player,
+        target,
+        cage,
+        platforms,
+        enemies
+    } = loadLevel(currentLevel, levels, canvas))
+
+    cancelAnimationFrame(animationId)
+    animate()
+})
+
+window.addEventListener("returnToMenu", () => {
+    cancelAnimationFrame(animationId)
+    isWin = false
+    currentLevel = 0
+})
 
 function animate(time = 0) {
 
@@ -117,17 +137,6 @@ const ui = createUIManager({
 let lastShotTime = 0
 const fireCooldown = 0.25 
 
-
-
-window.addEventListener("levelSelected", (e) => {
-    const { player: p, target: t, cage: c, platforms: pf, enemies: en } = e.detail
-    player = p
-    target = t
-    cage = c
-    platforms = pf
-    enemies = en
-})
-
 window.addEventListener("keydown", (e) => {
 
     if (inputLocked()) return
@@ -176,30 +185,15 @@ function checkWinCondition() {
 
         if (currentLevel === lastIndex) {
             ui.showEnd()
+            currentLevel = 0
         } else {
+            currentLevel++
             ui.showWin()
         }
 
         cancelAnimationFrame(animationId)
     }
 }
-
-document.getElementById("nextLevelButton").addEventListener("click", () => {
-    currentLevel++
-    // let isDone = false
-    // if (currentLevel = 1) isDone = true
-
-    if (currentLevel < levels.length) {
-        ({ player, target, cage, platforms, enemies } =
-            loadLevel(currentLevel, levels, canvas))
-
-        isWin = false
-        animate()
-    } else {
-        console.log('game selesai')
-    }
-})
-
 // ----------- Win Condition End ------------
 
 // ------------ Lose Condition Start ------------

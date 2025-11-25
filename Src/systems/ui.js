@@ -1,5 +1,6 @@
 import { resetInput } from "./inputKeys.js"
 import { lockInput, unlockInput } from "./gameState.js"
+import { resetWin } from "./gameState.js"
 
 export function createUIManager({ loadLevel, animate, levels, canvas }) {
     let currentLevel = 0
@@ -20,7 +21,9 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
     // ---------- MAIN MENU ----------
     document.getElementById("playBtn").onclick = () => {
         hide("mainMenu")
-        show("levelSelect")
+        resetWin()
+        currentLevel = 0
+        window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
     }
 
     document.getElementById("creditBtn").onclick = () => {
@@ -33,46 +36,23 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
         show("mainMenu")
     }
 
-    document.getElementById("backToMainFromLevel").onclick = () => {
-        hide("levelSelect")
-        show("mainMenu")
-    }
-
-    // ---------- SELECT LEVEL ----------
-    document.querySelectorAll(".levelButton").forEach(btn => {
-        btn.onclick = () => {
-            const selected = Number(btn.dataset.level)
-            currentLevel = selected
-
-            const newState = loadLevel(selected, levels, canvas)
-            window.dispatchEvent(new CustomEvent("levelSelected", { detail: newState }))
-
-            hide("levelSelect")
-            gameRunning = true
-            animate()
-        }
-    })
-
     // ---------- WIN ----------
     document.getElementById("nextLevelButton").onclick = () => {
         currentLevel++
-        if (currentLevel < levels.length) {
-            loadLevel(currentLevel, levels, canvas)
-            hide("winScreen")  
-        } else {
-            hide("winScreen")
-            show("endScreen")
-        }
+        window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
+        hide("winScreen")
     }
 
     // ---------- LOSE ----------
     document.getElementById("retryButton").onclick = () => {
-        loadLevel(currentLevel, levels, canvas)
+        window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
         hide("loseScreen")
     }
 
     // ---------- END ----------
     document.getElementById("endToMainBtn").onclick = () => {
+        currentLevel = 0
+        window.dispatchEvent(new CustomEvent("returnToMenu"))
         hide("endScreen")
         show("mainMenu")
     }
@@ -106,7 +86,6 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
 
         hide("winScreen")
         hide("loseScreen")
-        hide("levelSelect")
         hide("creditMenu")
         hide("endScreen")
 

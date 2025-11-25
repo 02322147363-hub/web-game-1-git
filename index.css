@@ -4,6 +4,12 @@ html, body {
     overflow: hidden;
 }
 
+canvas {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
 .uiScreen {
     position: absolute;
     width: 100%;
@@ -18,13 +24,28 @@ html, body {
     gap: 20px;
 }
 
-canvas {
-    display: block;
-    margin: 0;
-    padding: 0;
+.uiScreen button {
+    font-size: 24px;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
 }
 
-.uiScreen button {
+.creditScreen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    color: aliceblue;
+    font-size: 32px;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.creditScreen button {
     font-size: 24px;
     padding: 10px 20px;
     margin-top: 20px;
