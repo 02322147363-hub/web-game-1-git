@@ -20,7 +20,7 @@ export function loadLevel(index, levels, canvas) {
         height: charHeight,
         position: { x: data.player.x, y: data.player.y },
         velocity: { x: 0, y: 0 },
-        color: "blue"
+        color: "#F3A712"
     })
 
     const target = new Target({
@@ -28,7 +28,7 @@ export function loadLevel(index, levels, canvas) {
         height: charHeight,
         position: { x: data.target.x, y: data.target.y },
         velocity: { x: 0, y: 0 },
-        color: "pink"
+        color: "#A8C686"
     })
 
     const cage = new Cage({
@@ -61,7 +61,7 @@ export function loadLevel(index, levels, canvas) {
             height: charHeight,
             position: { x: e.x, y: spawnY },
             velocity: { x: 0, y: 0 },
-            color: "red"
+            color: "#D1345B"
         })
     })
 

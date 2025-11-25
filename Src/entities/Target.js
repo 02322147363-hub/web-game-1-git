@@ -10,15 +10,22 @@ export default class Target extends Sprite {
         const accel = 900
         const maxSpeed = 120
         const deccel = 0.95
-        const range = 200
-        
+        const rangeX = 200
+        const rangeY = 175 
+
+        const dy = player.position.y - this.position.y
+        const distanceY = Math.abs(dy)
+
         const dx = player.position.x - this.position.x
         const distanceX = Math.abs(dx)
 
-        if (distanceX > range) {
-            this.velocity.x *= deccel
-        } else {
+        const isSameHeight = distanceY <= rangeY
+        const isInRangeX = distanceX <= rangeX
+
+        if (isSameHeight && isInRangeX) {
             this.velocity.x += dx > 0 ? accel * deltaTime : -accel * deltaTime
+        } else {
+            this.velocity.x *= deccel
         }
 
         if (this.velocity.x > maxSpeed) this.velocity.x = maxSpeed

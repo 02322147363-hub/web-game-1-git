@@ -6,7 +6,7 @@ export default class Cage {
     }
 
     draw(ctx) {
-        ctx.strokeStyle = "yellow"
+        ctx.strokeStyle = "#F3A712"
         ctx.lineWidth = 4
         ctx.strokeRect(this.position.x, this.position.y, this.width, this.height)
     }

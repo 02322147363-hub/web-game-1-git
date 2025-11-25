@@ -5,7 +5,7 @@ export const keys = {
     d: {
         pressed: false
     },
-    w: {
+    space: {
         pressed: false
     },
     arrowLeft: {

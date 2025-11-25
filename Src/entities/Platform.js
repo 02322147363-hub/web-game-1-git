@@ -1,5 +1,5 @@
 export default class Platform {
-    constructor({x, y, width, height, color = 'green'}) {
+    constructor({x, y, width, height, color = '#669BBC'}) {
         this.position = {x, y}
         this.width = width
         this.height = height

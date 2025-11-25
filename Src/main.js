@@ -57,7 +57,7 @@ function animate(time = 0) {
 
     animationId = window.requestAnimationFrame(animate)
 
-    c.fillStyle = 'black'
+    c.fillStyle = '#29335C'
     c.fillRect(0, 0, canvas.width, canvas.height)
 
     player.isOnGround = false
@@ -68,20 +68,26 @@ function animate(time = 0) {
     target.update(deltaTime, c, gravity, canvas.width)
 
     enemies.forEach(enemy => {
+        if (!enemy.isDead) {
         bullets.forEach(bullet => {
             if (
-                bullet.position.x < enemy.position.x + enemy.width &&
-                bullet.position.x + bullet.width > enemy.position.x &&
-                bullet.position.y < enemy.position.y + enemy.height &&
-                bullet.position.y + bullet.height > enemy.position.y
-            ) {
-                enemy.isDead = true
-                bullet.active = false
-            }
-        })
+                    bullet.position.x < enemy.position.x + enemy.width &&
+                    bullet.position.x + bullet.width > enemy.position.x &&
+                    bullet.position.y < enemy.position.y + enemy.height &&
+                    bullet.position.y + bullet.height > enemy.position.y
+                ) {
+                    enemy.isDead = true
+                    bullet.active = false
+                }
+            })
+        }
         
-        enemy.follow(player, deltaTime)
-        enemy.update(deltaTime, c, gravity, canvas.width)
+        if (!enemy.isDead) {
+            enemy.follow(player, deltaTime)
+            enemy.update(deltaTime, c, gravity, canvas.width)
+        }
+
+        enemies = enemies.filter(e => !e.isDead)
     })
 
     // platform
@@ -135,33 +141,32 @@ const ui = createUIManager({
 })
 
 let lastShotTime = 0
-const fireCooldown = 0.25 
+const fireCooldown = 0.6
 
 window.addEventListener("keydown", (e) => {
 
     if (inputLocked()) return
 
-    if (e.code === "Space") {
+    if (e.code === "ShiftLeft") {
 
-        const now = performance.now() / 1000 
+        const now = performance.now() / 1000
         if (now - lastShotTime < fireCooldown) return
         
         lastShotTime = now
 
         const direction = player.facing || 1
         const bulletX = player.position.x + player.width / 2
-        const bulletY = player.position.y + player.height / 1.5
+        const bulletY = player.position.y + player.height / 2.5
 
         bullets.push(new Bullet(bulletX, bulletY, direction))
     }
 
-    if (e.key === 'w' || e.key === 'ArrowUp') {
+    if (e.key === " " || e.key === 'ArrowUp') {
         player.handleJump()
     }
 
     if (e.key === 'Escape') {
-        ({ player, target, cage, platforms, enemies } =
-        loadLevel(currentLevel, levels, canvas))
+        currentLevel = 0
         ui.goToMainMenu();
     }
 })
@@ -209,11 +214,6 @@ function isColliding(a, b) {
 function gameOver() {
     ui.showLose()
     cancelAnimationFrame(animationId)
+    currentLevel
 }
-
-document.getElementById("retryButton").addEventListener("click", () => {
-    ({ player, target, cage, platforms, enemies } =
-        loadLevel(currentLevel, levels, canvas))
-    animate()
-})
 // ----------- Lose Condition End --------------

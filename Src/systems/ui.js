@@ -31,8 +31,18 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
         show("creditMenu")
     }
 
+    document.getElementById("tutorBtn").onclick = () => {
+        hide("mainMenu")
+        show("tutorMenu")
+    }
+
     document.getElementById("backToMainFromCredit").onclick = () => {
         hide("creditMenu")
+        show("mainMenu")
+    }
+
+    document.getElementById("backToMainFromTutor").onclick = () => {
+        hide("tutorMenu")
         show("mainMenu")
     }
 

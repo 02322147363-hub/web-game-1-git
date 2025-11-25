@@ -4,50 +4,48 @@ import { keys } from "./inputKeys.js"
 window.addEventListener('keydown', (event) => {
 })
 
-window.addEventListener('keydown', (event) => {
+window.addEventListener("keydown", (e) => {
     if (inputLocked()) return
 
-    switch(event.key) {
-        case 'd':
+    switch (e.code) {
+        case "KeyD":
             keys.d.pressed = true
             break
-        case 'a':
+        case "KeyA":
             keys.a.pressed = true
             break
-        case 'w':
-            keys.w.pressed = true
-            break
-        case 'ArrowRight':
+        case "ArrowRight":
             keys.arrowRight.pressed = true
             break
-        case 'ArrowLeft':
+        case "ArrowLeft":
             keys.arrowLeft.pressed = true
             break
-        case 'ArrowUp':
-            keys.arrowUp.pressed = true
+        case "KeyW":
+        case "ArrowUp":
+            keys.space.pressed = true
             break
     }
 })
 
-window.addEventListener('keyup', (event) => {
+window.addEventListener("keyup", (e) => {
     if (inputLocked()) return
-    switch(event.key) {
-        case 'd':
+
+    switch (e.code) {
+        case "KeyD":
             keys.d.pressed = false
             break
-        case 'a':
+        case "KeyA":
             keys.a.pressed = false
             break
-        case 'ArrowUp':
-            keys.arrowUp.pressed = false
+        case "ArrowRight":
+            keys.arrowRight.pressed = false
             break
-        case 'ArrowLeft':
+        case "ArrowLeft":
             keys.arrowLeft.pressed = false
             break
-        case 'ArrowRight':
-            keys.arrowRight.pressed = false
+        case "KeyW":
+        case "ArrowUp":
+            keys.space.pressed = false
             break
     }
 })
-
-
