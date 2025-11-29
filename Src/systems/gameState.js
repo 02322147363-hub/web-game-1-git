@@ -1,4 +1,5 @@
 let isWin = false
+let easyMode = true
 
 export function setWin(v) { isWin = v }
 export function getWin() { return isWin }
@@ -16,4 +17,16 @@ export function unlockInput() {
 
 export function inputLocked() {
     return inputLock
+}
+
+export function runEasyMode() {
+    easyMode = true
+}
+
+export function runHardMode() {
+    easyMode = false
+}
+
+export function modeRun() {
+    return easyMode
 }

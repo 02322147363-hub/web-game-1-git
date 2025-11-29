@@ -1,6 +1,7 @@
 import { resetInput } from "./inputKeys.js"
 import { lockInput, unlockInput } from "./gameState.js"
 import { resetWin } from "./gameState.js"
+import { runEasyMode, runHardMode } from "./gameState.js"
 
 export function createUIManager({ loadLevel, animate, levels, canvas }) {
     let currentLevel = 0
@@ -21,6 +22,20 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
     // ---------- MAIN MENU ----------
     document.getElementById("playBtn").onclick = () => {
         hide("mainMenu")
+        show("selectMode")
+    }
+
+    document.getElementById("easyBtn").onclick = () => {
+        hide("selectMode")
+        runEasyMode()
+        resetWin()
+        currentLevel = 0
+        window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
+    }
+
+    document.getElementById("hardBtn").onclick = () => {
+        hide("selectMode")
+        runHardMode()
         resetWin()
         currentLevel = 0
         window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
@@ -70,6 +85,11 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
     // mulai dari main menu
     show("mainMenu")
 
+    function restartLevel() {
+        currentLevel = 0
+        window.dispatchEvent(new CustomEvent("selectLevel", { detail: currentLevel }))
+    }
+
     function showWin() {
         show("winScreen")   // tampilkan UI-nya
         lockInput()
@@ -113,6 +133,7 @@ export function createUIManager({ loadLevel, animate, levels, canvas }) {
         isGameRunning: () => gameRunning,
         showWin,
         showLose,
-        showEnd
+        showEnd,
+        restartLevel
     }
 }

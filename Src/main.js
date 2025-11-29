@@ -6,6 +6,7 @@ import { checkCollision } from "./systems/collision.js"
 import { levels } from "./levels/levelData.js"
 import { loadLevel } from "./levels/loadLevel.js"
 import { createUIManager } from "./systems/ui.js"
+import { modeRun } from "./systems/gameState.js"
 
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d')
@@ -108,6 +109,7 @@ function animate(time = 0) {
     cage.draw(c)
 
     checkWinCondition()
+    checkLoseCondition()
     
     const lostObject = [...enemies, target]
 
@@ -141,24 +143,26 @@ const ui = createUIManager({
 })
 
 let lastShotTime = 0
-const fireCooldown = 0.6
+const fireCooldown = 0.5
 
 window.addEventListener("keydown", (e) => {
 
     if (inputLocked()) return
 
-    if (e.code === "ShiftLeft") {
-
-        const now = performance.now() / 1000
-        if (now - lastShotTime < fireCooldown) return
+    if (modeRun()) {
+        if (e.code === "ShiftLeft") {
         
-        lastShotTime = now
+            const now = performance.now() / 1000
+            if (now - lastShotTime < fireCooldown) return
+        
+            lastShotTime = now
 
-        const direction = player.facing || 1
-        const bulletX = player.position.x + player.width / 2
-        const bulletY = player.position.y + player.height / 2.5
+            const direction = player.facing || 1
+            const bulletX = player.position.x + player.width / 2
+            const bulletY = player.position.y + player.height / 2.5
 
-        bullets.push(new Bullet(bulletX, bulletY, direction))
+            bullets.push(new Bullet(bulletX, bulletY, direction))
+        }
     }
 
     if (e.key === " " || e.key === 'ArrowUp') {
@@ -167,6 +171,8 @@ window.addEventListener("keydown", (e) => {
 
     if (e.key === 'Escape') {
         currentLevel = 0
+        ui.restartLevel();
+        cancelAnimationFrame(animationId)
         ui.goToMainMenu();
     }
 })
@@ -202,6 +208,12 @@ function checkWinCondition() {
 // ----------- Win Condition End ------------
 
 // ------------ Lose Condition Start ------------
+function checkLoseCondition() {
+    if (player.position.y > 576) {
+        gameOver();
+    }
+}
+
 function isColliding(a, b) {
         return (
             a.position.x < b.position.x + b.width &&
